@@ -1,7 +1,5 @@
 # ASP.NET Core
 # Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
 - main
@@ -13,5 +11,32 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+# Step 1: Install .NET SDK
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '6.x' # Specify your .NET version
+
+# Step 2: Restore dependencies
+- script: dotnet restore
+  displayName: 'Restore dependencies'
+
+# Step 3: Build the solution
 - script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+  displayName: 'Build solution $(buildConfiguration)'
+
+# Step 4: Run tests (Optional)
+# Uncomment if you have tests
+# - script: dotnet test --configuration $(buildConfiguration)
+#   displayName: 'Run tests'
+
+# Step 5: Publish the application
+- script: dotnet publish --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+  displayName: 'Publish application'
+
+# Step 6: Publish build artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
+  displayName: 'Publish build artifacts'
